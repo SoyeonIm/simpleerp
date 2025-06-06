@@ -1,74 +1,63 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package gui;
 
-/**
- *
- * @author soyeon
- */
+import dao.EmployeeDAO;
 import employee.Employee;
-import employee.EmployeeManager;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.util.List;
 
-public class EmployeePanel extends JFrame {
-    private EmployeeManager employeeManager;
-    private JTextArea displayArea;
+public class EmployeePanel extends JPanel {
+    private EmployeeDAO dao;
+    private JTable table;
+    private DefaultTableModel model;
 
-    public EmployeePanel(EmployeeManager manager) {
-        this.employeeManager = manager;
-
-        setTitle("Employee Management");
-        setSize(500, 400);
-        setLocationRelativeTo(null);
+    public EmployeePanel() {
+        dao = new EmployeeDAO();
         setLayout(new BorderLayout());
 
-        JPanel inputPanel = new JPanel(new GridLayout(4, 2));
-        JTextField idField = new JTextField();
-        JTextField nameField = new JTextField();
-        JTextField deptField = new JTextField();
+        model = new DefaultTableModel(new Object[]{"ID", "Name", "Department"}, 0);
+        table = new JTable(model);
+        JScrollPane scrollPane = new JScrollPane(table);
+        add(scrollPane, BorderLayout.CENTER);
 
-        inputPanel.add(new JLabel("ID:"));
-        inputPanel.add(idField);
-        inputPanel.add(new JLabel("Name:"));
-        inputPanel.add(nameField);
-        inputPanel.add(new JLabel("Department:"));
-        inputPanel.add(deptField);
+        JPanel controlPanel = new JPanel();
+        JTextField nameField = new JTextField(10);
+        JTextField deptField = new JTextField(10);
+        JButton addButton = new JButton("Add");
 
-        JButton addBtn = new JButton("Add Employee");
-        addBtn.addActionListener(e -> {
-            String id = idField.getText();
-            String name = nameField.getText();
-            String dept = deptField.getText();
-            if (!id.isEmpty() && !name.isEmpty() && !dept.isEmpty()) {
-                employeeManager.addEmployee(new Employee(id, name, dept));
-                refreshDisplay();
+        controlPanel.add(new JLabel("Name:"));
+        controlPanel.add(nameField);
+        controlPanel.add(new JLabel("Department:"));
+        controlPanel.add(deptField);
+        controlPanel.add(addButton);
+        add(controlPanel, BorderLayout.SOUTH);
+
+        addButton.addActionListener(e -> {
+            String name = nameField.getText().trim();
+            String dept = deptField.getText().trim();
+
+            if (!name.isEmpty() && !dept.isEmpty()) {
+                String id = "E" + System.currentTimeMillis(); // Method to create ID
+                Employee emp = new Employee(id, name, dept);
+                dao.insert(emp);     // store in database
+                loadEmployees();   // refresh
+                nameField.setText("");
+                deptField.setText("");
             } else {
-                JOptionPane.showMessageDialog(this, "Please fill all fields.");
+                JOptionPane.showMessageDialog(this, "Both fields are required.", "Input Error", JOptionPane.ERROR_MESSAGE);
             }
         });
 
-        displayArea = new JTextArea();
-        displayArea.setEditable(false);
-        JScrollPane scrollPane = new JScrollPane(displayArea);
-
-        add(inputPanel, BorderLayout.NORTH);
-        add(addBtn, BorderLayout.CENTER);
-        add(scrollPane, BorderLayout.SOUTH);
-
-        refreshDisplay();
-        setVisible(true);
+        loadEmployees();  
     }
 
-    private void refreshDisplay() {
-        StringBuilder sb = new StringBuilder();
-        for (Employee e : employeeManager.getEmployees()) {
-            sb.append(e.id).append(" - ").append(e.name).append(" (").append(e.getDepartment()).append(")\n");
+    private void loadEmployees() {
+        model.setRowCount(0);
+        List<Employee> employees = dao.getAll();  // from our database
+        for (Employee emp : employees) {
+            model.addRow(new Object[]{emp.getId(), emp.getName(), emp.getDepartment()});
         }
-        displayArea.setText(sb.toString());
     }
 }
-

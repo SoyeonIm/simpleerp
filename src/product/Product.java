@@ -16,6 +16,8 @@ public class Product {
         this.quantity = quantity;
         this.price = price;
     }
+    
+    
 
     public void displayProduct() {
         System.out.println("Product ID: " + id + ", Name: " + name +
@@ -24,6 +26,9 @@ public class Product {
 
     public String getId() { return id; }
     public int getQuantity() { return quantity; }
+    public double getPrice() {
+        return price;
+    }
     public void setQuantity(int quantity) { this.quantity = quantity; }
 
     public String toFileString() {

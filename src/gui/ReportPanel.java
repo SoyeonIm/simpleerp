@@ -1,33 +1,34 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package gui;
 
-/**
- *
- * @author soyeon
- */
-
-import employee.EmployeeManager;
-import product.InventoryManager;
+import dao.EmployeeDAO;
+import dao.ProductDAO;
 
 import javax.swing.*;
+import java.awt.*;
 
-public class ReportPanel extends JFrame {
-    public ReportPanel(EmployeeManager empManager, InventoryManager invManager) {
-        setTitle("System Report");
-        setSize(300, 150);
-        setLocationRelativeTo(null);
+public class ReportPanel extends JPanel {
+    private EmployeeDAO employeeDAO;
+    private ProductDAO productDAO;
 
-        int empCount = empManager.getEmployees().size();
-        int prodCount = invManager.getProducts().size();
+    public ReportPanel() {
+        employeeDAO = new EmployeeDAO();
+        productDAO = new ProductDAO();
 
-        JLabel report = new JLabel("<html><h3>Total Employees: " + empCount +
-                "<br>Total Products: " + prodCount + "</h3></html>", SwingConstants.CENTER);
-        add(report);
+        int employeeCount = employeeDAO.getAll().size();
+        int productCount = productDAO.getAll().size();
 
-        setVisible(true);
+        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        add(Box.createVerticalStrut(30));
+        JLabel empLabel = new JLabel("👤 Total Employees: " + employeeCount);
+        empLabel.setFont(new Font("Arial", Font.BOLD, 18));
+        empLabel.setAlignmentX(CENTER_ALIGNMENT);
+        add(empLabel);
+
+        add(Box.createVerticalStrut(20));
+
+        JLabel prodLabel = new JLabel("📦 Total Products: " + productCount);
+        prodLabel.setFont(new Font("Arial", Font.BOLD, 18));
+        prodLabel.setAlignmentX(CENTER_ALIGNMENT);
+        add(prodLabel);
     }
 }
-

@@ -126,5 +126,18 @@ public class InventoryManager implements UserInterface {
             }
         }
     }
+    
+    // ✅ GUI에서 제품 목록을 가져갈 수 있게 공개 메서드 추가
+    public java.util.List<Product> getAllProducts() {
+        return new java.util.ArrayList<>(products.values());
+}
+
+// 제품 하나 가져오기
+    public Product getProductById(String id) {
+    return products.get(id);
+}
+
+
+    
 }
 
