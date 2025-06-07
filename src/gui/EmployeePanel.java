@@ -1,12 +1,11 @@
 package gui;
 
 import dao.EmployeeDAO;
-import employee.Employee;
-
-import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.util.List;
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import model.Employee;
 
 public class EmployeePanel extends JPanel {
     private EmployeeDAO dao;
@@ -39,7 +38,7 @@ public class EmployeePanel extends JPanel {
             String dept = deptField.getText().trim();
 
             if (!name.isEmpty() && !dept.isEmpty()) {
-                String id = "E" + System.currentTimeMillis(); // Method to create ID
+                int id = (int)(System.currentTimeMillis() % 100000); // simple id generation
                 Employee emp = new Employee(id, name, dept);
                 dao.insert(emp);     // store in database
                 loadEmployees();   // refresh
