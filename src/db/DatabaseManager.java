@@ -9,56 +9,98 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+//singleton pattern for database manager
 public class DatabaseManager {
+    
+    private static DatabaseManager instance;
     private static final String DB_URL = "jdbc:derby:simpleerpdb;create=true";
-    private static Connection connection;
+    private Connection connection;
 
-    public static Connection getConnection() {
+    //private constructor so no one can make new objects
+    private DatabaseManager() {
+        try {
+            Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
+            connection = DriverManager.getConnection(DB_URL);
+            System.out.println("database connected");
+            setupTables();
+        } catch (Exception e) {
+            System.out.println("database connection failed");
+            e.printStackTrace();
+        }
+    }
+
+    //get the only instance
+    public static DatabaseManager getInstance() {
+        if (instance == null) {
+            instance = new DatabaseManager();
+        }
+        return instance;
+    }
+
+    //get connection for dao classes
+    public Connection getConnection() {
         try {
             if (connection == null || connection.isClosed()) {
-                Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
                 connection = DriverManager.getConnection(DB_URL);
-                System.out.println("✅ Connected to Derby DB!");
-                initializeTables(connection);  // 여기서 connection 사용
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (SQLException e) {
+            System.out.println("database connection failed, retrying...");
+            try {
+                //try with different database name if locked
+                String retryUrl = "jdbc:derby:simpleerpdb_backup;create=true";
+                connection = DriverManager.getConnection(retryUrl);
+                System.out.println("connected to backup database");
+                setupTables(); //setup tables for backup database too
+            } catch (SQLException ex) {
+                System.out.println("all database connections failed");
+                ex.printStackTrace();
+            }
         }
         return connection;
     }
-
-    private static void initializeTables(Connection conn) throws SQLException {
-        Statement stmt = conn.createStatement(); 
-
+    
+    //setup tables when first time run
+    private void setupTables() {
         try {
-            stmt.executeUpdate("""
-                CREATE TABLE employees (
-                    id VARCHAR(10) PRIMARY KEY,
-                    name VARCHAR(100),
-                    department VARCHAR(100)
-                )
-            """);
-            System.out.println("🟢 EMPLOYEES table created.");
-        } catch (SQLException e) {
-            if (!"X0Y32".equals(e.getSQLState())) throw e;
-        }
+            Statement stmt = connection.createStatement();
+            
+            //create employees table
+            try {
+                stmt.executeUpdate("CREATE TABLE employees (id VARCHAR(10) PRIMARY KEY, name VARCHAR(100), department VARCHAR(100))");
+                System.out.println("employees table created");
+            } catch (SQLException e) {
+                //table already exists, thats fine
+            }
 
-        try {
-            stmt.executeUpdate("""
-                CREATE TABLE products (
-                    id VARCHAR(10) PRIMARY KEY,
-                    name VARCHAR(100),
-                    quantity INT,
-                    price DOUBLE
-                )
-            """);
-            System.out.println("🟢 PRODUCTS table created.");
-        } catch (SQLException e) {
-            if (!"X0Y32".equals(e.getSQLState())) throw e;
-        }
+            //create products table  
+            try {
+                stmt.executeUpdate("CREATE TABLE products (id VARCHAR(10) PRIMARY KEY, name VARCHAR(100), quantity INT, price DOUBLE)");
+                System.out.println("products table created");
+            } catch (SQLException e) {
+                //table already exists, thats fine
+            }
+            
+            //create users table for login
+            try {
+                stmt.executeUpdate("CREATE TABLE users (username VARCHAR(50) PRIMARY KEY, password VARCHAR(100))");
+                System.out.println("users table created");
+                
+                //add default admin user
+                try {
+                    stmt.executeUpdate("INSERT INTO users (username, password) VALUES ('admin', 'admin123')");
+                    System.out.println("default admin user created");
+                } catch (SQLException ex) {
+                    //user already exists, thats fine
+                }
+                
+            } catch (SQLException e) {
+                //table already exists, thats fine
+            }
 
-        stmt.close(); // OK
-     
+            stmt.close();// OK
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 }
 

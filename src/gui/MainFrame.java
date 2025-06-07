@@ -1,9 +1,7 @@
 package gui;
 
 import javax.swing.*;
-import employee.EmployeeManager;
 import static javax.swing.WindowConstants.EXIT_ON_CLOSE;
-import product.InventoryManager;
 
 public class MainFrame extends javax.swing.JFrame {
 
@@ -28,6 +26,9 @@ tabbedPane.addTab("Report", new ReportPanel());
     }
 
     public static void main(String[] args) {
+        //use default look and feel
+        
+        //start with login window instead of main window
         SwingUtilities.invokeLater(() -> {
             new MainFrame().setVisible(true);
         });
