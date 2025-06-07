@@ -1,13 +1,13 @@
 ----------------------------------------------------------------
-Sat Jun 07 01:48:50 NZST 2025:
-Booting Derby version The Apache Software Foundation - Apache Derby - 10.14.2.0 - (1828579): instance a816c00e-0197-4580-5f00-00000f59bc00 
-on database directory /Users/soyeon/Downloads/P31_22185169_23214287 2/simpleerp/simpleerpdb with class loader jdk.internal.loader.ClassLoaders$AppClassLoader@677327b6 
-Loaded from file:/Users/soyeon/Downloads/db-derby-10.14.2.0-bin/lib/derby.jar
+Sat Jun 07 22:26:26 NZST 2025:
+Booting Derby version The Apache Software Foundation - Apache Derby - 10.14.2.0 - (1828579): instance a816c00e-0197-49ed-6eb0-00000e89dea8 
+on database directory E:\25-s1\comp603\as2\netbeans\simpleerp\simpleerpdb with class loader jdk.internal.loader.ClassLoaders$AppClassLoader@65b54208 
+Loaded from file:/E:/25-s1/comp603/week9/PDC_Tutorials/lib/derby.jar
 java.vendor=Oracle Corporation
-java.runtime.version=21.0.5+9-LTS-239
-user.dir=/Users/soyeon/Downloads/P31_22185169_23214287 2/simpleerp
-os.name=Mac OS X
-os.arch=aarch64
-os.version=15.5
+java.runtime.version=21+35-LTS-2513
+user.dir=E:\25-s1\comp603\as2\netbeans\simpleerp
+os.name=Windows 11
+os.arch=amd64
+os.version=10.0
 derby.system.home=null
 Database Class Loader started - derby.database.classpath=''

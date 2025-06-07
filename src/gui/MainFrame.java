@@ -2,6 +2,7 @@ package gui;
 
 import javax.swing.*;
 import employee.EmployeeManager;
+import static javax.swing.WindowConstants.EXIT_ON_CLOSE;
 import product.InventoryManager;
 
 public class MainFrame extends javax.swing.JFrame {
