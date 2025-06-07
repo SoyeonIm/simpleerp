@@ -8,6 +8,7 @@ import javax.swing.*;
 import model.Employee;
 import model.Product;
 
+
 //simple report panel showing basic stats
 public class ReportPanel extends JPanel {
     private EmployeeDAO employeeDAO;
