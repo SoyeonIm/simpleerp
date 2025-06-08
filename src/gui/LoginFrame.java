@@ -188,17 +188,18 @@ public class LoginFrame extends JFrame {
         String password = new String(passwordField.getPassword());
         
         if (username.isEmpty() || password.isEmpty()) {
-            showMessage("Please enter both username and password", "Input Required", JOptionPane.WARNING_MESSAGE);
+            showMessage("Please enter both username and password", "Missing Information", JOptionPane.WARNING_MESSAGE);
             return;
         }
         
+        UserDAO userDAO = new UserDAO();
         if (userDAO.login(username, password)) {
+            showMessage("Login successful!", "Success", JOptionPane.INFORMATION_MESSAGE);
             dispose();
-            SwingUtilities.invokeLater(() -> new MainFrame().setVisible(true));
+            SwingUtilities.invokeLater(() -> new MainFrame(username).setVisible(true));
         } else {
-            showMessage("Invalid credentials. Please try again.", "Login Failed", JOptionPane.ERROR_MESSAGE);
+            showMessage("Invalid username or password", "Login Failed", JOptionPane.ERROR_MESSAGE);
             passwordField.setText("");
-            passwordField.requestFocus();
         }
     }
     
@@ -225,9 +226,6 @@ public class LoginFrame extends JFrame {
     }
     
     public static void main(String[] args) {
-        //setup database shutdown hook
-        db.DatabaseManager.setupShutdownHook();
-        
         SwingUtilities.invokeLater(() -> new LoginFrame().setVisible(true));
     }
 } 
