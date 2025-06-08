@@ -1,27 +1,27 @@
 package gui;
 
+import utils.ResourceManager;
 import dao.UserDAO;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import utils.ResourceManager;
 
-//simple login window
-public class LoginFrame extends JFrame {
+public class RegistrationFrame extends JFrame {
     
     private JTextField usernameField;
     private JPasswordField passwordField;
+    private JPasswordField confirmPasswordField;
     private UserDAO userDAO;
     
-    public LoginFrame() {
+    public RegistrationFrame() {
         userDAO = new UserDAO();
         setupUI();
     }
     
     private void setupUI() {
-        setTitle("SimpleERP Login");
-        setSize(450, 600);
+        setTitle("SimpleERP Registration");
+        setSize(450, 650);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         setResizable(false);
@@ -44,19 +44,19 @@ public class LoginFrame extends JFrame {
         };
         mainPanel.setLayout(new GridBagLayout());
         
-        //login card panel
-        JPanel loginCard = createLoginCard();
+        //registration card panel
+        JPanel registerCard = createRegisterCard();
         
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.anchor = GridBagConstraints.CENTER;
-        mainPanel.add(loginCard, gbc);
+        mainPanel.add(registerCard, gbc);
         
         add(mainPanel);
     }
     
-    private JPanel createLoginCard() {
+    private JPanel createRegisterCard() {
         JPanel card = new JPanel() {
             @Override
             protected void paintComponent(Graphics g) {
@@ -70,16 +70,16 @@ public class LoginFrame extends JFrame {
         card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
         card.setBackground(ResourceManager.Colors.CARD_BG);
         card.setBorder(new EmptyBorder(40, 40, 40, 40));
-        card.setPreferredSize(new Dimension(350, 480));
+        card.setPreferredSize(new Dimension(350, 530));
         card.setOpaque(false);
         
         //title
-        JLabel titleLabel = new JLabel("Welcome Back");
+        JLabel titleLabel = new JLabel("Create Account");
         titleLabel.setFont(new Font("Arial", Font.BOLD, 28));
         titleLabel.setForeground(ResourceManager.Colors.TEXT_PRIMARY);
         titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         
-        JLabel subtitleLabel = new JLabel("Sign in to your account");
+        JLabel subtitleLabel = new JLabel("Join SimpleERP today");
         subtitleLabel.setFont(new Font("Arial", Font.PLAIN, 14));
         subtitleLabel.setForeground(ResourceManager.Colors.TEXT_SECONDARY);
         subtitleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -123,11 +123,28 @@ public class LoginFrame extends JFrame {
         ));
         passwordField.setAlignmentX(Component.CENTER_ALIGNMENT);
         
-        //buttons
-        JButton loginButton = createStyledButton("Sign In", ResourceManager.Colors.PRIMARY);
-        loginButton.setIcon(ResourceManager.getResizedIcon("login.png", 16, 16));
+        //confirm password field
+        JLabel confirmLabel = new JLabel("Confirm Password");
+        confirmLabel.setFont(new Font("Arial", Font.PLAIN, 12));
+        confirmLabel.setForeground(ResourceManager.Colors.TEXT_PRIMARY);
+        confirmLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        confirmLabel.setBorder(new EmptyBorder(15, 0, 5, 0));
         
-        JButton registerButton = createStyledButton("Create Account", ResourceManager.Colors.ACCENT);
+        confirmPasswordField = new JPasswordField();
+        confirmPasswordField.setPreferredSize(new Dimension(270, 40));
+        confirmPasswordField.setMaximumSize(new Dimension(270, 40));
+        confirmPasswordField.setFont(new Font("Arial", Font.PLAIN, 14));
+        confirmPasswordField.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(ResourceManager.Colors.BORDER),
+            new EmptyBorder(8, 12, 8, 12)
+        ));
+        confirmPasswordField.setAlignmentX(Component.CENTER_ALIGNMENT);
+        
+        //buttons
+        JButton registerButton = createStyledButton("Create Account", ResourceManager.Colors.PRIMARY);
+        registerButton.setIcon(ResourceManager.getResizedIcon("user.png", 16, 16));
+        
+        JButton backButton = createStyledButton("Back to Login", ResourceManager.Colors.ACCENT);
         
         //add components to form
         formPanel.add(userLabel);
@@ -136,10 +153,13 @@ public class LoginFrame extends JFrame {
         formPanel.add(passLabel);
         formPanel.add(Box.createRigidArea(new Dimension(0, 5)));
         formPanel.add(passwordField);
+        formPanel.add(confirmLabel);
+        formPanel.add(Box.createRigidArea(new Dimension(0, 5)));
+        formPanel.add(confirmPasswordField);
         formPanel.add(Box.createRigidArea(new Dimension(0, 25)));
-        formPanel.add(loginButton);
-        formPanel.add(Box.createRigidArea(new Dimension(0, 15)));
         formPanel.add(registerButton);
+        formPanel.add(Box.createRigidArea(new Dimension(0, 15)));
+        formPanel.add(backButton);
         
         //add to card
         card.add(titleLabel);
@@ -148,9 +168,9 @@ public class LoginFrame extends JFrame {
         card.add(formPanel);
         
         //add action listeners
-        loginButton.addActionListener(this::loginAction);
         registerButton.addActionListener(this::registerAction);
-        passwordField.addActionListener(this::loginAction);
+        backButton.addActionListener(this::backToLoginAction);
+        confirmPasswordField.addActionListener(this::registerAction);
         
         return card;
     }
@@ -183,28 +203,47 @@ public class LoginFrame extends JFrame {
         return button;
     }
     
-    private void loginAction(ActionEvent e) {
+    private void registerAction(ActionEvent e) {
         String username = usernameField.getText().trim();
         String password = new String(passwordField.getPassword());
+        String confirmPassword = new String(confirmPasswordField.getPassword());
         
-        if (username.isEmpty() || password.isEmpty()) {
-            showMessage("Please enter both username and password", "Input Required", JOptionPane.WARNING_MESSAGE);
+        //validation
+        if (username.isEmpty() || password.isEmpty() || confirmPassword.isEmpty()) {
+            showMessage("Please fill in all fields", "Input Required", JOptionPane.WARNING_MESSAGE);
             return;
         }
         
-        if (userDAO.login(username, password)) {
-            dispose();
-            SwingUtilities.invokeLater(() -> new MainFrame().setVisible(true));
+        if (username.length() < 3) {
+            showMessage("Username must be at least 3 characters long", "Invalid Username", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        
+        if (password.length() < 4) {
+            showMessage("Password must be at least 4 characters long", "Invalid Password", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        
+        if (!password.equals(confirmPassword)) {
+            showMessage("Passwords do not match", "Password Mismatch", JOptionPane.WARNING_MESSAGE);
+            confirmPasswordField.setText("");
+            confirmPasswordField.requestFocus();
+            return;
+        }
+        
+        //attempt registration
+        if (userDAO.register(username, password)) {
+            CustomMessageDialog.showSuccess(this, "Account created successfully! You can now login.", "Registration Successful");
+            backToLoginAction(null);
         } else {
-            showMessage("Invalid credentials. Please try again.", "Login Failed", JOptionPane.ERROR_MESSAGE);
-            passwordField.setText("");
-            passwordField.requestFocus();
+            CustomMessageDialog.showError(this, "Registration failed. Username may already exist.", "Registration Failed");
+            usernameField.requestFocus();
         }
     }
     
-    private void registerAction(ActionEvent e) {
+    private void backToLoginAction(ActionEvent e) {
         dispose();
-        SwingUtilities.invokeLater(() -> new RegistrationFrame().setVisible(true));
+        SwingUtilities.invokeLater(() -> new LoginFrame().setVisible(true));
     }
     
     private void showMessage(String message, String title, int type) {
@@ -222,12 +261,5 @@ public class LoginFrame extends JFrame {
                 CustomMessageDialog.showInfo(this, message, title);
                 break;
         }
-    }
-    
-    public static void main(String[] args) {
-        //setup database shutdown hook
-        db.DatabaseManager.setupShutdownHook();
-        
-        SwingUtilities.invokeLater(() -> new LoginFrame().setVisible(true));
     }
 } 

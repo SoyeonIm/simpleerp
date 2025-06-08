@@ -1,7 +1,10 @@
 package gui;
 
+import db.DatabaseManager;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import javax.swing.*;
-import static javax.swing.WindowConstants.EXIT_ON_CLOSE;
+import static javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE;
 
 public class MainFrame extends javax.swing.JFrame {
 
@@ -9,6 +12,18 @@ public class MainFrame extends javax.swing.JFrame {
         initComponents();
         setLocationRelativeTo(null);
         setTitle("Simple ERP System - GUI");
+        setupCloseOperation();
+    }
+    
+    private void setupCloseOperation() {
+        setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                DatabaseManager.getInstance().closeDatabase();
+                System.exit(0);
+            }
+        });
     }
 
     private void initComponents() {
@@ -21,7 +36,6 @@ tabbedPane.addTab("Report", new ReportPanel());
 
 
         getContentPane().add(tabbedPane);
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
         setSize(800, 600);
     }
 

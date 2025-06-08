@@ -19,7 +19,7 @@ public class ProductPanel extends JPanel {
         setupUI();
         loadProducts();
     }
-    
+
     private void setupUI() {
         setLayout(new BorderLayout(10, 10));
         setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
@@ -95,61 +95,61 @@ public class ProductPanel extends JPanel {
     
     //add new product
     private void addProduct() {
-        String id = idField.getText().trim();
-        String name = nameField.getText().trim();
-        String qtyStr = qtyField.getText().trim();
-        String priceStr = priceField.getText().trim();
+            String id = idField.getText().trim();
+            String name = nameField.getText().trim();
+            String qtyStr = qtyField.getText().trim();
+            String priceStr = priceField.getText().trim();
 
         if (id.isEmpty() || name.isEmpty()) {
             JOptionPane.showMessageDialog(this, "ID and Name are required");
             return;
         }
 
-        try {
-            int quantity = Integer.parseInt(qtyStr);
-            double price = Double.parseDouble(priceStr);
+            try {
+                int quantity = Integer.parseInt(qtyStr);
+                double price = Double.parseDouble(priceStr);
 
             Product p = new Product(Integer.parseInt(id), name, quantity, price);
             dao.insert(p);
             clearFields();
-            loadProducts();
+                    loadProducts();
             
-        } catch (NumberFormatException ex) {
+            } catch (NumberFormatException ex) {
             JOptionPane.showMessageDialog(this, "Quantity and Price must be numbers");
-        }
+            }
     }
-    
+
     //update selected product quantity
     private void updateQuantity() {
-        int selected = table.getSelectedRow();
+            int selected = table.getSelectedRow();
         if (selected < 0) {
             JOptionPane.showMessageDialog(this, "Please select a product first");
             return;
         }
         
-        String id = model.getValueAt(selected, 0).toString();
+                String id = model.getValueAt(selected, 0).toString();
         String qtyStr = JOptionPane.showInputDialog(this, "Enter new quantity:");
-        
+
         if (qtyStr != null) {
-            try {
-                int newQty = Integer.parseInt(qtyStr);
+                try {
+                    int newQty = Integer.parseInt(qtyStr);
                 dao.updateQuantity(id, newQty);
-                loadProducts();
-            } catch (NumberFormatException ex) {
+                    loadProducts();
+                } catch (NumberFormatException ex) {
                 JOptionPane.showMessageDialog(this, "Please enter a valid number");
             }
         }
     }
-    
+
     //remove selected product
     private void removeProduct() {
-        int selected = table.getSelectedRow();
+            int selected = table.getSelectedRow();
         if (selected < 0) {
             JOptionPane.showMessageDialog(this, "Please select a product first");
             return;
         }
         
-        String id = model.getValueAt(selected, 0).toString();
+                String id = model.getValueAt(selected, 0).toString();
         int confirm = JOptionPane.showConfirmDialog(this, 
             "Are you sure you want to delete this product?", 
             "Confirm Delete", 
@@ -157,7 +157,7 @@ public class ProductPanel extends JPanel {
             
         if (confirm == JOptionPane.YES_OPTION) {
             dao.delete(id);
-            loadProducts();
+                loadProducts();
         }
     }
     
@@ -167,7 +167,7 @@ public class ProductPanel extends JPanel {
         nameField.setText("");
         qtyField.setText("");
         priceField.setText("");
-    }
+            }
 
     //load all products from database into table
     private void loadProducts() {
@@ -176,7 +176,7 @@ public class ProductPanel extends JPanel {
 
         for (Product p : products) {
             model.addRow(new Object[]{
-                p.getId(), p.getName(), p.getQuantity(), p.getPrice()
+                    p.getId(), p.getName(), p.getQuantity(), p.getPrice()
             });
         }
     }
