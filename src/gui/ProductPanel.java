@@ -184,16 +184,19 @@ public class ProductPanel extends JPanel {
         JButton addBtn = createStyledButton("Add Product", ResourceManager.Colors.PRIMARY, "add.png");
         JButton updateBtn = createStyledButton("Update", ResourceManager.Colors.ACCENT, "edit.png");
         JButton deleteBtn = createStyledButton("Delete", ResourceManager.Colors.DANGER, "delete..png");
+        JButton batchDeleteBtn = createStyledButton("Delete Selected", ResourceManager.Colors.DANGER, "delete..png");
         JButton clearBtn = createStyledButton("Clear", ResourceManager.Colors.TEXT_SECONDARY, "clear.png");
 
         buttonPanel.add(addBtn);
         buttonPanel.add(updateBtn);
         buttonPanel.add(deleteBtn);
+        buttonPanel.add(batchDeleteBtn);
         buttonPanel.add(clearBtn);
 
         addBtn.addActionListener(e -> addProduct());
         updateBtn.addActionListener(e -> updateProduct());
         deleteBtn.addActionListener(e -> deleteProduct());
+        batchDeleteBtn.addActionListener(e -> batchDeleteProducts());
         clearBtn.addActionListener(e -> clearFields());
 
         mainPanel.add(inputPanel, BorderLayout.CENTER);
@@ -398,6 +401,32 @@ public class ProductPanel extends JPanel {
         if (confirm == JOptionPane.YES_OPTION) {
             dao.delete(id);
             showMessage("Product deleted successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+            loadProducts();
+        }
+    }
+    
+    private void batchDeleteProducts() {
+        int[] selectedRows = table.getSelectedRows();
+        if (selectedRows.length == 0) {
+            showMessage("Please select products to delete", "No Selection", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        
+        int confirm = JOptionPane.showConfirmDialog(this,
+            "Are you sure you want to delete " + selectedRows.length + " selected products?",
+            "Confirm Batch Delete",
+            JOptionPane.YES_NO_OPTION,
+            JOptionPane.QUESTION_MESSAGE);
+            
+        if (confirm == JOptionPane.YES_OPTION) {
+            int deletedCount = 0;
+            for (int i = 0; i < selectedRows.length; i++) {
+                String id = model.getValueAt(selectedRows[i], 0).toString();
+                dao.delete(id);
+                deletedCount++;
+            }
+            
+            showMessage("Deleted " + deletedCount + " products successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
             loadProducts();
         }
     }
