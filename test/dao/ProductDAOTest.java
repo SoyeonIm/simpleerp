@@ -44,7 +44,7 @@ public class ProductDAOTest {
     @Test
     public void testInsert() {
         System.out.println("insert");
-        Product p = new Product(999, "test product", 10, 99.99);
+        Product p = new Product("T999", "test product", 10, 99.99);
         ProductDAO instance = new ProductDAO();
         instance.insert(p);
         
@@ -52,7 +52,7 @@ public class ProductDAOTest {
         List<Product> products = instance.getAll();
         boolean found = false;
         for(Product product : products) {
-            if(product.getId() == 999) {
+            if(product.getId().equals("T999")) {
                 found = true;
                 assertEquals("test product", product.getName());
                 break;
@@ -61,7 +61,7 @@ public class ProductDAOTest {
         assertTrue("product should be inserted", found);
         
         //cleanup
-        instance.delete("999");
+        instance.delete("T999");
     }
 
     /**
@@ -71,24 +71,24 @@ public class ProductDAOTest {
     public void testUpdateQuantity() {
         System.out.println("updateQuantity");
         //first insert a test product
-        Product p = new Product(888, "update test", 5, 50.0);
+        Product p = new Product("T888", "update test", 5, 50.0);
         ProductDAO instance = new ProductDAO();
         instance.insert(p);
         
         //update quantity
-        instance.updateQuantity("888", 15);
+        instance.updateQuantity("T888", 15);
         
         //verify update
         List<Product> products = instance.getAll();
         for(Product product : products) {
-            if(product.getId() == 888) {
+            if(product.getId().equals("T888")) {
                 assertEquals(15, product.getQuantity());
                 break;
             }
         }
         
         //cleanup
-        instance.delete("888");
+        instance.delete("T888");
     }
 
     /**
@@ -98,18 +98,18 @@ public class ProductDAOTest {
     public void testDelete() {
         System.out.println("delete");
         //insert test product first
-        Product p = new Product(777, "delete test", 3, 30.0);
+        Product p = new Product("T777", "delete test", 3, 30.0);
         ProductDAO instance = new ProductDAO();
         instance.insert(p);
         
         //delete it
-        instance.delete("777");
+        instance.delete("T777");
         
         //verify deletion
         List<Product> products = instance.getAll();
         boolean found = false;
         for(Product product : products) {
-            if(product.getId() == 777) {
+            if(product.getId().equals("T777")) {
                 found = true;
                 break;
             }
