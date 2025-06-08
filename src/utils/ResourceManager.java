@@ -36,7 +36,7 @@ public class ResourceManager {
         return null;
     }
     
-    //get resized icon
+    //get resized icon with high quality scaling
     public static ImageIcon getResizedIcon(String iconName, int width, int height) {
         ImageIcon icon = getIcon(iconName);
         if (icon != null) {
@@ -44,6 +44,19 @@ public class ResourceManager {
             return new ImageIcon(img);
         }
         return createDefaultIcon(width, height);
+    }
+    
+    //get background image
+    public static ImageIcon getBackgroundImage(String imageName) {
+        try {
+            URL url = ResourceManager.class.getResource("/resources/images/" + imageName);
+            if (url != null) {
+                return new ImageIcon(url);
+            }
+        } catch (Exception e) {
+            System.out.println("error loading background: " + imageName);
+        }
+        return null;
     }
     
     //create default icon when resource not found
@@ -63,17 +76,33 @@ public class ResourceManager {
         return new ImageIcon(img);
     }
     
-    //color scheme for modern ui
+    //color scheme based on your selected palette
     public static class Colors {
-        public static final Color PRIMARY = new Color(74, 144, 226);
-        public static final Color PRIMARY_DARK = new Color(54, 104, 186);  
-        public static final Color SECONDARY = new Color(108, 117, 125);
-        public static final Color SUCCESS = new Color(40, 167, 69);
-        public static final Color DANGER = new Color(220, 53, 69);
-        public static final Color WARNING = new Color(255, 193, 7);
+        // Main palette from your color card
+        public static final Color DEEP_BLUE = new Color(41, 60, 115);      // #293C73
+        public static final Color NAVY_BLUE = new Color(37, 50, 89);       // #253259  
+        public static final Color WARM_BROWN = new Color(188, 94, 53);     // #BC5E35
+        public static final Color LIGHT_BROWN = new Color(191, 152, 122);  // #BF987A
+        public static final Color LIGHT_GRAY = new Color(217, 216, 215);   // #D9D8D7
+        
+        // UI Colors based on palette - improved contrast
+        public static final Color PRIMARY = new Color(65, 90, 140);       // Lighter blue for better contrast
+        public static final Color PRIMARY_DARK = NAVY_BLUE;
+        public static final Color ACCENT = WARM_BROWN;
+        public static final Color ACCENT_LIGHT = LIGHT_BROWN;
         public static final Color BACKGROUND = new Color(248, 249, 250);
         public static final Color CARD_BG = Color.WHITE;
-        public static final Color TEXT_PRIMARY = new Color(33, 37, 41);
-        public static final Color TEXT_SECONDARY = new Color(108, 117, 125);
+        public static final Color BORDER = new Color(200, 200, 200);
+        
+        // Text colors - improved readability
+        public static final Color TEXT_PRIMARY = new Color(25, 30, 35);
+        public static final Color TEXT_SECONDARY = new Color(90, 100, 110);
+        public static final Color TEXT_ON_PRIMARY = Color.WHITE;
+        public static final Color ICON_CONTRAST = new Color(255, 255, 255);  // White icons for blue backgrounds
+        
+        // Status colors - better visibility
+        public static final Color SUCCESS = new Color(34, 139, 34);        // Forest green
+        public static final Color DANGER = new Color(220, 53, 69);
+        public static final Color WARNING = new Color(255, 140, 0);        // Dark orange
     }
 } 

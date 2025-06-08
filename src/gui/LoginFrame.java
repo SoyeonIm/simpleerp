@@ -187,20 +187,47 @@ public class LoginFrame extends JFrame {
         String username = usernameField.getText().trim();
         String password = new String(passwordField.getPassword());
         
-        if (username.isEmpty() || password.isEmpty()) {
-            showMessage("Please enter both username and password", "Missing Information", JOptionPane.WARNING_MESSAGE);
+        if (!validateLoginInput(username, password)) {
             return;
         }
         
-        UserDAO userDAO = new UserDAO();
-        if (userDAO.login(username, password)) {
-            showMessage("Login successful!", "Success", JOptionPane.INFORMATION_MESSAGE);
-            dispose();
-            SwingUtilities.invokeLater(() -> new MainFrame(username).setVisible(true));
-        } else {
-            showMessage("Invalid username or password", "Login Failed", JOptionPane.ERROR_MESSAGE);
+        try {
+            UserDAO userDAO = new UserDAO();
+            if (userDAO.login(username, password)) {
+                showMessage("Login successful!", "Success", JOptionPane.INFORMATION_MESSAGE);
+                dispose();
+                SwingUtilities.invokeLater(() -> new MainFrame(username).setVisible(true));
+            } else {
+                showMessage("Invalid username or password", "Login Failed", JOptionPane.ERROR_MESSAGE);
+                passwordField.setText("");
+                passwordField.requestFocus();
+            }
+        } catch (Exception ex) {
+            showMessage("Login failed: " + ex.getMessage(), "System Error", JOptionPane.ERROR_MESSAGE);
             passwordField.setText("");
         }
+    }
+    
+    private boolean validateLoginInput(String username, String password) {
+        if (username.isEmpty()) {
+            showMessage("Please enter your username", "Missing Information", JOptionPane.WARNING_MESSAGE);
+            usernameField.requestFocus();
+            return false;
+        }
+        
+        if (password.isEmpty()) {
+            showMessage("Please enter your password", "Missing Information", JOptionPane.WARNING_MESSAGE);
+            passwordField.requestFocus();
+            return false;
+        }
+        
+        if (username.length() < 3) {
+            showMessage("Username must be at least 3 characters", "Invalid Input", JOptionPane.WARNING_MESSAGE);
+            usernameField.requestFocus();
+            return false;
+        }
+        
+        return true;
     }
     
     private void registerAction(ActionEvent e) {

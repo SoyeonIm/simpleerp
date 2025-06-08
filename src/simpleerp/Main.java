@@ -18,7 +18,7 @@ public class Main {
         
         EmployeeManager employeeManager = new EmployeeManager();
         InventoryManager inventoryManager = new InventoryManager();
-        ReportGenerator reportGenerator = new ReportGenerator();
+        ReportGenerator reportGenerator = new ReportGenerator(employeeManager, inventoryManager);
         FileHandler fileHandler = new FileHandler();
 
 
@@ -36,7 +36,12 @@ public class Main {
             switch (option) {
                 case "1" -> employeeManager.displayMenu();
                 case "2" -> inventoryManager.displayMenu();
-                case "3" -> reportGenerator.generate(employeeManager, inventoryManager);
+                case "3" -> {
+                    System.out.println("=== SYSTEM REPORT ===");
+                    System.out.println("Total Employees: " + reportGenerator.getTotalEmployees());
+                    System.out.println("Total Products: " + reportGenerator.getTotalProducts());
+                    System.out.println("================");
+                }
                 case "4" -> {
                     fileHandler.saveEmployees(employeeManager);
                     fileHandler.saveProducts(inventoryManager);

@@ -16,6 +16,7 @@ public class EmployeePanel extends JPanel {
     private DefaultTableModel model;
     private JTextField idField, nameField, deptField;
     private JTextField searchField;
+    private JButton deleteBtn;
 
     public EmployeePanel() {
         dao = new EmployeeDAO();
@@ -122,6 +123,8 @@ public class EmployeePanel extends JPanel {
         DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
         centerRenderer.setHorizontalAlignment(JLabel.CENTER);
         table.getColumnModel().getColumn(0).setCellRenderer(centerRenderer);
+        
+        table.getSelectionModel().addListSelectionListener(e -> updateDeleteButton());
 
         JScrollPane scrollPane = new JScrollPane(table);
         scrollPane.setBorder(BorderFactory.createLineBorder(ResourceManager.Colors.BORDER));
@@ -176,20 +179,17 @@ public class EmployeePanel extends JPanel {
 
         JButton addBtn = createStyledButton("Add", ResourceManager.Colors.PRIMARY, "add.png");
         JButton updateBtn = createStyledButton("Update", ResourceManager.Colors.ACCENT, "edit.png");
-        JButton deleteBtn = createStyledButton("Delete", ResourceManager.Colors.DANGER, "delete..png");
-        JButton batchDeleteBtn = createStyledButton("Delete Selected", ResourceManager.Colors.DANGER, "delete..png");
+        deleteBtn = createStyledButton("Delete", ResourceManager.Colors.DANGER, "delete..png");
         JButton clearBtn = createStyledButton("Clear", ResourceManager.Colors.TEXT_SECONDARY, "clear.png");
 
         buttonPanel.add(addBtn);
         buttonPanel.add(updateBtn);
         buttonPanel.add(deleteBtn);
-        buttonPanel.add(batchDeleteBtn);
         buttonPanel.add(clearBtn);
 
         addBtn.addActionListener(e -> addEmployee());
         updateBtn.addActionListener(e -> updateEmployee());
-        deleteBtn.addActionListener(e -> deleteEmployee());
-        batchDeleteBtn.addActionListener(e -> batchDeleteEmployees());
+        deleteBtn.addActionListener(e -> smartDelete());
         clearBtn.addActionListener(e -> clearFields());
 
         mainPanel.add(inputPanel, BorderLayout.CENTER);
@@ -412,6 +412,29 @@ public class EmployeePanel extends JPanel {
             default:
                 CustomMessageDialog.showInfo(parentFrame, message, title);
                 break;
+        }
+    }
+    
+    private void updateDeleteButton() {
+        int selectedRowCount = table.getSelectedRowCount();
+        if (selectedRowCount == 0) {
+            deleteBtn.setText("Delete");
+        } else if (selectedRowCount == 1) {
+            deleteBtn.setText("Delete");
+        } else {
+            deleteBtn.setText("Delete Selected (" + selectedRowCount + ")");
+        }
+    }
+    
+    private void smartDelete() {
+        int selectedRowCount = table.getSelectedRowCount();
+        if (selectedRowCount == 0) {
+            showMessage("Please select employees to delete", "No Selection", JOptionPane.WARNING_MESSAGE);
+            return;
+        } else if (selectedRowCount == 1) {
+            deleteEmployee();
+        } else {
+            batchDeleteEmployees();
         }
     }
 }
