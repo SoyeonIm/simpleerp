@@ -15,7 +15,7 @@ public class EmployeeDAO {
         Connection conn = DatabaseManager.getInstance().getConnection();
         
         try {
-            // Enable auto-commit if not already enabled
+            //enable auto-commit if not already enabled
             if (!conn.getAutoCommit()) {
                 conn.setAutoCommit(true);
             }
@@ -26,7 +26,7 @@ public class EmployeeDAO {
             stmt.setString(3, e.getDepartment());
             int result = stmt.executeUpdate();
             
-            // Ensure transaction is committed
+            //ensure transaction is committed
             if (!conn.getAutoCommit()) {
                 conn.commit();
             }
@@ -76,7 +76,7 @@ public class EmployeeDAO {
         Connection conn = DatabaseManager.getInstance().getConnection();
         
         try {
-            // Enable auto-commit if not already enabled
+            //enable auto-commit if not already enabled
             if (!conn.getAutoCommit()) {
                 conn.setAutoCommit(true);
             }
@@ -85,7 +85,7 @@ public class EmployeeDAO {
             stmt.setString(1, id);
             int result = stmt.executeUpdate();
             
-            // Ensure transaction is committed
+            //ensure transaction is committed
             if (!conn.getAutoCommit()) {
                 conn.commit();
             }
@@ -94,6 +94,42 @@ public class EmployeeDAO {
             System.out.println("employee deleted successfully");
         } catch (SQLException ex) {
             ErrorHandler.handleDatabaseError(ex, "employee delete");
+            rollbackTransaction(conn);
+        }
+    }
+    
+    public void deleteMultiple(String[] ids) {
+        if (ids == null || ids.length == 0) {
+            return;
+        }
+        
+        Connection conn = DatabaseManager.getInstance().getConnection();
+        String sql = "DELETE FROM employees WHERE id = ?";
+        
+        try {
+            if (!conn.getAutoCommit()) {
+                conn.setAutoCommit(true);
+            }
+            
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            int count = 0;
+            
+            for (String id : ids) {
+                if (id != null && !id.trim().isEmpty()) {
+                    stmt.setString(1, id.trim());
+                    stmt.addBatch();
+                    count++;
+                }
+            }
+            
+            if (count > 0) {
+                int[] results = stmt.executeBatch();
+                System.out.println("deleted " + count + " employees");
+            }
+            
+            stmt.close();
+        } catch (SQLException ex) {
+            ErrorHandler.handleDatabaseError(ex, "employee batch delete");
             rollbackTransaction(conn);
         }
     }
