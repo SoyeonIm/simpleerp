@@ -1,13 +1,10 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package db;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
+import utils.ErrorHandler;
 
 //singleton pattern for database manager
 public class DatabaseManager {
@@ -32,21 +29,8 @@ public class DatabaseManager {
             System.out.println("database connected with auto-commit: " + connection.getAutoCommit());
             setupTables();
         } catch (Exception e) {
-            System.out.println("database connection failed, trying backup...");
-            try {
-                //try backup database
-                String backupUrl = "jdbc:derby:simpleerpdb_backup;create=true";
-                connection = DriverManager.getConnection(backupUrl);
-                
-                // Ensure auto-commit is enabled
-                connection.setAutoCommit(true);
-                
-                System.out.println("connected to backup database with auto-commit: " + connection.getAutoCommit());
-                setupTables();
-            } catch (Exception ex) {
-                System.out.println("all database connections failed");
-                ex.printStackTrace();
-            }
+            ErrorHandler.handleDatabaseError(e, "initial connection");
+            tryBackupDatabase();
         }
     }
 
@@ -71,10 +55,22 @@ public class DatabaseManager {
                 }
             }
         } catch (SQLException e) {
-            System.out.println("connection check failed, reinitializing...");
+            ErrorHandler.handleDatabaseError(e, "connection check");
             initializeDatabase();
         }
         return connection;
+    }
+    
+    private void tryBackupDatabase() {
+        try {
+            String backupUrl = "jdbc:derby:simpleerpdb_backup;create=true";
+            connection = DriverManager.getConnection(backupUrl);
+            connection.setAutoCommit(true);
+            System.out.println("connected to backup database");
+            setupTables();
+        } catch (Exception ex) {
+            ErrorHandler.handleDatabaseError(ex, "backup connection");
+        }
     }
 
     //setup tables when first time run
@@ -117,7 +113,7 @@ public class DatabaseManager {
 
             stmt.close();
         } catch (SQLException e) {
-            e.printStackTrace();
+            ErrorHandler.handleDatabaseError(e, "table setup");
         }
     }
     
@@ -146,8 +142,7 @@ public class DatabaseManager {
                 }
             }
         } catch (SQLException e) {
-            System.out.println("error closing database: " + e.getMessage());
-            e.printStackTrace();
+            ErrorHandler.handleDatabaseError(e, "database shutdown");
         }
     }
     
