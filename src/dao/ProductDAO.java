@@ -1,101 +1,137 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package dao;
 
 import db.DatabaseManager;
-import product.Product;
-
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import model.Product;
 
+//data access object for products
 public class ProductDAO {
 
     public void insert(Product p) {
         String sql = "INSERT INTO products (id, name, quantity, price) VALUES (?, ?, ?, ?)";
+        Connection conn = DatabaseManager.getInstance().getConnection();
 
-        Connection conn = DatabaseManager.getConnection();
-        if (conn == null) {
-            System.err.println("Failed to Connect DB");
-            return;
-        }
-
-        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, p.getId());
+        try {
+            //enable auto-commit if not already enabled
+            if (!conn.getAutoCommit()) {
+                conn.setAutoCommit(true);
+            }
+            
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            stmt.setInt(1, p.getId());
             stmt.setString(2, p.getName());
             stmt.setInt(3, p.getQuantity());
             stmt.setDouble(4, p.getPrice());
-            stmt.executeUpdate();
-            System.out.println("✅ Product added to DB");
+            int result = stmt.executeUpdate();
+            
+            //ensure transaction is committed
+            if (!conn.getAutoCommit()) {
+                conn.commit();
+            }
+            
+            stmt.close();
+            System.out.println("product added successfully");
         } catch (SQLException ex) {
-            ex.printStackTrace();
+            System.out.println("error adding product: " + ex.getMessage());
+            try {
+                if (!conn.getAutoCommit()) {
+                    conn.rollback();
+                }
+            } catch (SQLException rollbackEx) {
+                System.out.println("rollback failed: " + rollbackEx.getMessage());
+            }
         }
     }
 
     public void updateQuantity(String id, int qty) {
         String sql = "UPDATE products SET quantity = ? WHERE id = ?";
+        Connection conn = DatabaseManager.getInstance().getConnection();
 
-        Connection conn = DatabaseManager.getConnection();
-        if (conn == null) {
-            System.err.println("Failed to Connect DB");
-            return;
-        }
-
-        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try {
+            //nable auto-commit if not already enabled
+            if (!conn.getAutoCommit()) {
+                conn.setAutoCommit(true);
+            }
+            
+            PreparedStatement stmt = conn.prepareStatement(sql);
             stmt.setInt(1, qty);
             stmt.setString(2, id);
-            stmt.executeUpdate();
-            System.out.println("🔄 Product quantity updated");
+            int result = stmt.executeUpdate();
+            
+            //ensure transaction is committed
+            if (!conn.getAutoCommit()) {
+                conn.commit();
+            }
+            
+            stmt.close();
+            System.out.println("product quantity updated (rows affected: " + result + ")");
         } catch (SQLException ex) {
-            ex.printStackTrace();
+            System.out.println("error updating product: " + ex.getMessage());
+            try {
+                if (!conn.getAutoCommit()) {
+                    conn.rollback();
+                }
+            } catch (SQLException rollbackEx) {
+                System.out.println("rollback failed: " + rollbackEx.getMessage());
+            }
         }
     }
 
     public void delete(String id) {
         String sql = "DELETE FROM products WHERE id = ?";
+        Connection conn = DatabaseManager.getInstance().getConnection();
 
-        Connection conn = DatabaseManager.getConnection();
-        if (conn == null) {
-            System.err.println("Failed to Conncet DB");
-            return;
-        }
-
-        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try {
+            //enable auto-commit if not already enabled
+            if (!conn.getAutoCommit()) {
+                conn.setAutoCommit(true);
+            }
+            
+            PreparedStatement stmt = conn.prepareStatement(sql);
             stmt.setString(1, id);
-            stmt.executeUpdate();
-            System.out.println("🗑️ Product deleted");
+            int result = stmt.executeUpdate();
+            
+            //ensure transaction is committed
+            if (!conn.getAutoCommit()) {
+                conn.commit();
+            }
+            
+            stmt.close();
+            System.out.println("product deleted (rows affected: " + result + ")");
         } catch (SQLException ex) {
-            ex.printStackTrace();
+            System.out.println("error deleting product: " + ex.getMessage());
+            try {
+                if (!conn.getAutoCommit()) {
+                    conn.rollback();
+                }
+            } catch (SQLException rollbackEx) {
+                System.out.println("rollback failed: " + rollbackEx.getMessage());
+            }
         }
     }
 
     public List<Product> getAll() {
-        List<Product> list = new ArrayList<>();
+        List<Product> products = new ArrayList<>();
         String sql = "SELECT * FROM products";
+        Connection conn = DatabaseManager.getInstance().getConnection();
 
-        Connection conn = DatabaseManager.getConnection();
-        if (conn == null) {
-            System.err.println("Failed to Conncet DB");
-            return list;
-        }
-
-        try (
+        try {
             Statement stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery(sql)
-        ) {
+            ResultSet rs = stmt.executeQuery(sql);
             while (rs.next()) {
                 String id = rs.getString("id");
                 String name = rs.getString("name");
                 int qty = rs.getInt("quantity");
                 double price = rs.getDouble("price");
-                list.add(new Product(id, name, qty, price));
+                products.add(new Product(Integer.parseInt(id), name, qty, price));
             }
+            rs.close();
+            stmt.close();
         } catch (SQLException ex) {
-            ex.printStackTrace();
+            System.out.println("error getting products: " + ex.getMessage());
         }
-
-        return list;
+        return products;
     }
 }
