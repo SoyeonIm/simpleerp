@@ -17,6 +17,7 @@ public class ProductPanel extends JPanel {
     private DefaultTableModel model;
     private JTextField idField, nameField, qtyField, priceField;
     private JTextField searchField;
+    private JButton deleteBtn;
 
     public ProductPanel() {
         dao = new ProductDAO();
@@ -124,6 +125,8 @@ public class ProductPanel extends JPanel {
         centerRenderer.setHorizontalAlignment(JLabel.CENTER);
         table.getColumnModel().getColumn(0).setCellRenderer(centerRenderer);
         table.getColumnModel().getColumn(2).setCellRenderer(centerRenderer);
+        
+        table.getSelectionModel().addListSelectionListener(e -> updateDeleteButton());
 
         JScrollPane scrollPane = new JScrollPane(table);
         scrollPane.setBorder(BorderFactory.createLineBorder(ResourceManager.Colors.BORDER));
@@ -183,20 +186,17 @@ public class ProductPanel extends JPanel {
 
         JButton addBtn = createStyledButton("Add Product", ResourceManager.Colors.PRIMARY, "add.png");
         JButton updateBtn = createStyledButton("Update", ResourceManager.Colors.ACCENT, "edit.png");
-        JButton deleteBtn = createStyledButton("Delete", ResourceManager.Colors.DANGER, "delete..png");
-        JButton batchDeleteBtn = createStyledButton("Delete Selected", ResourceManager.Colors.DANGER, "delete..png");
+        deleteBtn = createStyledButton("Delete", ResourceManager.Colors.DANGER, "delete..png");
         JButton clearBtn = createStyledButton("Clear", ResourceManager.Colors.TEXT_SECONDARY, "clear.png");
 
         buttonPanel.add(addBtn);
         buttonPanel.add(updateBtn);
         buttonPanel.add(deleteBtn);
-        buttonPanel.add(batchDeleteBtn);
         buttonPanel.add(clearBtn);
 
         addBtn.addActionListener(e -> addProduct());
         updateBtn.addActionListener(e -> updateProduct());
-        deleteBtn.addActionListener(e -> deleteProduct());
-        batchDeleteBtn.addActionListener(e -> batchDeleteProducts());
+        deleteBtn.addActionListener(e -> smartDelete());
         clearBtn.addActionListener(e -> clearFields());
 
         mainPanel.add(inputPanel, BorderLayout.CENTER);
@@ -279,7 +279,6 @@ public class ProductPanel extends JPanel {
         }
 
         try {
-            int productId = Integer.parseInt(id);
             int quantity = Integer.parseInt(qtyStr);
             double price = Double.parseDouble(priceStr);
 
@@ -288,7 +287,7 @@ public class ProductPanel extends JPanel {
                 return;
             }
 
-            Product product = new Product(productId, name, quantity, price);
+            Product product = new Product(id, name, quantity, price);
             dao.insert(product);
             
             showMessage("Product added successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
@@ -296,7 +295,7 @@ public class ProductPanel extends JPanel {
             loadProducts();
             
         } catch (NumberFormatException ex) {
-            showMessage("ID, Quantity and Price must be valid numbers", "Invalid Input", JOptionPane.ERROR_MESSAGE);
+            showMessage("Quantity and Price must be valid numbers", "Invalid Input", JOptionPane.ERROR_MESSAGE);
         } catch (Exception ex) {
             showMessage("Failed to add product: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
@@ -327,10 +326,9 @@ public class ProductPanel extends JPanel {
             return false;
         }
         
-        try {
-            Integer.parseInt(id);
-        } catch (NumberFormatException ex) {
-            showMessage("Product ID must be a valid number", "Invalid Input", JOptionPane.ERROR_MESSAGE);
+        // Product ID can be alphanumeric (e.g., P001, P002)
+        if (!id.matches("^[A-Za-z0-9]+$")) {
+            showMessage("Product ID must contain only letters and numbers", "Invalid Input", JOptionPane.ERROR_MESSAGE);
             idField.requestFocus();
             return false;
         }
@@ -443,7 +441,7 @@ public class ProductPanel extends JPanel {
 
         for (Product p : products) {
             if (p.getName().toLowerCase().contains(searchText) || 
-                String.valueOf(p.getId()).contains(searchText)) {
+                p.getId().toLowerCase().contains(searchText)) {
                 model.addRow(new Object[]{
                     p.getId(), p.getName(), p.getQuantity(), String.format("%.2f", p.getPrice())
                 });
@@ -485,6 +483,29 @@ public class ProductPanel extends JPanel {
             default:
                 CustomMessageDialog.showInfo(parentFrame, message, title);
                 break;
+        }
+    }
+    
+    private void updateDeleteButton() {
+        int selectedRowCount = table.getSelectedRowCount();
+        if (selectedRowCount == 0) {
+            deleteBtn.setText("Delete");
+        } else if (selectedRowCount == 1) {
+            deleteBtn.setText("Delete");
+        } else {
+            deleteBtn.setText("Delete Selected (" + selectedRowCount + ")");
+        }
+    }
+    
+    private void smartDelete() {
+        int selectedRowCount = table.getSelectedRowCount();
+        if (selectedRowCount == 0) {
+            showMessage("Please select products to delete", "No Selection", JOptionPane.WARNING_MESSAGE);
+            return;
+        } else if (selectedRowCount == 1) {
+            deleteProduct();
+        } else {
+            batchDeleteProducts();
         }
     }
 }
