@@ -271,8 +271,7 @@ public class ProductPanel extends JPanel {
         String qtyStr = qtyField.getText().trim();
         String priceStr = priceField.getText().trim();
 
-        if (id.isEmpty() || name.isEmpty() || qtyStr.isEmpty() || priceStr.isEmpty()) {
-            showMessage("Please fill in all fields", "Input Required", JOptionPane.WARNING_MESSAGE);
+        if (!validateProductInput(id, name, qtyStr, priceStr)) {
             return;
         }
 
@@ -280,6 +279,11 @@ public class ProductPanel extends JPanel {
             int productId = Integer.parseInt(id);
             int quantity = Integer.parseInt(qtyStr);
             double price = Double.parseDouble(priceStr);
+
+            if (quantity <= 0 || price <= 0) {
+                showMessage("Quantity and Price must be positive numbers", "Invalid Input", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
 
             Product product = new Product(productId, name, quantity, price);
             dao.insert(product);
@@ -290,7 +294,61 @@ public class ProductPanel extends JPanel {
             
         } catch (NumberFormatException ex) {
             showMessage("ID, Quantity and Price must be valid numbers", "Invalid Input", JOptionPane.ERROR_MESSAGE);
+        } catch (Exception ex) {
+            showMessage("Failed to add product: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
+    }
+    
+    private boolean validateProductInput(String id, String name, String qtyStr, String priceStr) {
+        if (id.isEmpty()) {
+            showMessage("Product ID cannot be empty", "Input Required", JOptionPane.WARNING_MESSAGE);
+            idField.requestFocus();
+            return false;
+        }
+        
+        if (name.isEmpty()) {
+            showMessage("Product name cannot be empty", "Input Required", JOptionPane.WARNING_MESSAGE);
+            nameField.requestFocus();
+            return false;
+        }
+        
+        if (qtyStr.isEmpty()) {
+            showMessage("Quantity cannot be empty", "Input Required", JOptionPane.WARNING_MESSAGE);
+            qtyField.requestFocus();
+            return false;
+        }
+        
+        if (priceStr.isEmpty()) {
+            showMessage("Price cannot be empty", "Input Required", JOptionPane.WARNING_MESSAGE);
+            priceField.requestFocus();
+            return false;
+        }
+        
+        try {
+            Integer.parseInt(id);
+        } catch (NumberFormatException ex) {
+            showMessage("Product ID must be a valid number", "Invalid Input", JOptionPane.ERROR_MESSAGE);
+            idField.requestFocus();
+            return false;
+        }
+        
+        try {
+            Integer.parseInt(qtyStr);
+        } catch (NumberFormatException ex) {
+            showMessage("Quantity must be a valid number", "Invalid Input", JOptionPane.ERROR_MESSAGE);
+            qtyField.requestFocus();
+            return false;
+        }
+        
+        try {
+            Double.parseDouble(priceStr);
+        } catch (NumberFormatException ex) {
+            showMessage("Price must be a valid number", "Invalid Input", JOptionPane.ERROR_MESSAGE);
+            priceField.requestFocus();
+            return false;
+        }
+        
+        return true;
     }
 
     private void updateProduct() {
@@ -305,12 +363,18 @@ public class ProductPanel extends JPanel {
 
         if (qtyStr != null && !qtyStr.trim().isEmpty()) {
             try {
-                int newQty = Integer.parseInt(qtyStr);
+                int newQty = Integer.parseInt(qtyStr.trim());
+                if (newQty < 0) {
+                    showMessage("Quantity cannot be negative", "Invalid Input", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
                 dao.updateQuantity(id, newQty);
                 showMessage("Quantity updated successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
                 loadProducts();
             } catch (NumberFormatException ex) {
                 showMessage("Please enter a valid number", "Invalid Input", JOptionPane.ERROR_MESSAGE);
+            } catch (Exception ex) {
+                showMessage("Failed to update product: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             }
         }
     }
