@@ -15,6 +15,10 @@ public class MainFrame extends JFrame {
 
     public MainFrame(String username) {
         this.currentUser = username;
+        
+        // Setup database shutdown hook for proper data persistence
+        DatabaseManager.setupShutdownHook();
+        
         initComponents();
         setupWindow();
         setupCloseOperation();
@@ -33,6 +37,7 @@ public class MainFrame extends JFrame {
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
+                System.out.println("closing application and database...");
                 DatabaseManager.getInstance().closeDatabase();
                 System.exit(0);
             }
@@ -172,14 +177,5 @@ public class MainFrame extends JFrame {
             dispose();
             SwingUtilities.invokeLater(() -> new LoginFrame().setVisible(true));
         }
-    }
-
-    public static void main(String[] args) {
-        //use default look and feel
-        
-        //start with login window instead of main window
-        SwingUtilities.invokeLater(() -> {
-            new LoginFrame().setVisible(true);
-        });
     }
 }
