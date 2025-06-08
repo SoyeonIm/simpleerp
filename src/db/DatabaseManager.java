@@ -18,14 +18,35 @@ public class DatabaseManager {
 
     //private constructor so no one can make new objects
     private DatabaseManager() {
+        initializeDatabase();
+    }
+    
+    private void initializeDatabase() {
         try {
             Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
             connection = DriverManager.getConnection(DB_URL);
-            System.out.println("database connected");
+            
+            // Ensure auto-commit is enabled for easier transaction handling
+            connection.setAutoCommit(true);
+            
+            System.out.println("database connected with auto-commit: " + connection.getAutoCommit());
             setupTables();
         } catch (Exception e) {
-            System.out.println("database connection failed");
-            e.printStackTrace();
+            System.out.println("database connection failed, trying backup...");
+            try {
+                //try backup database
+                String backupUrl = "jdbc:derby:simpleerpdb_backup;create=true";
+                connection = DriverManager.getConnection(backupUrl);
+                
+                // Ensure auto-commit is enabled
+                connection.setAutoCommit(true);
+                
+                System.out.println("connected to backup database with auto-commit: " + connection.getAutoCommit());
+                setupTables();
+            } catch (Exception ex) {
+                System.out.println("all database connections failed");
+                ex.printStackTrace();
+            }
         }
     }
 
@@ -41,31 +62,28 @@ public class DatabaseManager {
     public Connection getConnection() {
         try {
             if (connection == null || connection.isClosed()) {
-                connection = DriverManager.getConnection(DB_URL);
+                initializeDatabase();
+            } else {
+                // Double-check auto-commit is enabled
+                if (!connection.getAutoCommit()) {
+                    connection.setAutoCommit(true);
+                    System.out.println("re-enabled auto-commit on existing connection");
+                }
             }
         } catch (SQLException e) {
-            System.out.println("database connection failed, retrying...");
-            try {
-                //try with different database name if locked
-                String retryUrl = "jdbc:derby:simpleerpdb_backup;create=true";
-                connection = DriverManager.getConnection(retryUrl);
-                System.out.println("connected to backup database");
-                setupTables(); //setup tables for backup database too
-            } catch (SQLException ex) {
-                System.out.println("all database connections failed");
-                ex.printStackTrace();
-            }
+            System.out.println("connection check failed, reinitializing...");
+            initializeDatabase();
         }
         return connection;
     }
-    
+
     //setup tables when first time run
     private void setupTables() {
         try {
             Statement stmt = connection.createStatement();
-            
+
             //create employees table
-            try {
+        try {
                 stmt.executeUpdate("CREATE TABLE employees (id VARCHAR(10) PRIMARY KEY, name VARCHAR(100), department VARCHAR(100))");
                 System.out.println("employees table created");
             } catch (SQLException e) {
@@ -76,12 +94,12 @@ public class DatabaseManager {
             try {
                 stmt.executeUpdate("CREATE TABLE products (id VARCHAR(10) PRIMARY KEY, name VARCHAR(100), quantity INT, price DOUBLE)");
                 System.out.println("products table created");
-            } catch (SQLException e) {
+        } catch (SQLException e) {
                 //table already exists, thats fine
-            }
-            
+        }
+
             //create users table for login
-            try {
+        try {
                 stmt.executeUpdate("CREATE TABLE users (username VARCHAR(50) PRIMARY KEY, password VARCHAR(100))");
                 System.out.println("users table created");
                 
@@ -97,10 +115,49 @@ public class DatabaseManager {
                 //table already exists, thats fine
             }
 
-            stmt.close();// OK
+            stmt.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+    
+    //close database connection properly
+    public void closeDatabase() {
+        try {
+            if (connection != null && !connection.isClosed()) {
+                //ensure all transactions are committed before closing
+                if (!connection.getAutoCommit()) {
+                    connection.commit();
+                    System.out.println("final commit before closing");
+                }
+                connection.close();
+                System.out.println("database connection closed properly");
+            }
+            
+            //shutdown derby database
+            try {
+                DriverManager.getConnection("jdbc:derby:;shutdown=true");
+            } catch (SQLException e) {
+                //shutdown always throws exception, thats normal for derby
+                if (e.getSQLState().equals("XJ015")) {
+                    System.out.println("database shutdown successfully");
+                } else {
+                    System.out.println("database shutdown state: " + e.getSQLState());
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("error closing database: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+    
+    //shutdown hook to ensure database closes properly
+    public static void setupShutdownHook() {
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            if (instance != null) {
+                instance.closeDatabase();
+            }
+        }));
     }
 }
 
