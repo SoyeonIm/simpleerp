@@ -177,16 +177,19 @@ public class EmployeePanel extends JPanel {
         JButton addBtn = createStyledButton("Add", ResourceManager.Colors.PRIMARY, "add.png");
         JButton updateBtn = createStyledButton("Update", ResourceManager.Colors.ACCENT, "edit.png");
         JButton deleteBtn = createStyledButton("Delete", ResourceManager.Colors.DANGER, "delete..png");
+        JButton batchDeleteBtn = createStyledButton("Delete Selected", ResourceManager.Colors.DANGER, "delete..png");
         JButton clearBtn = createStyledButton("Clear", ResourceManager.Colors.TEXT_SECONDARY, "clear.png");
 
         buttonPanel.add(addBtn);
         buttonPanel.add(updateBtn);
         buttonPanel.add(deleteBtn);
+        buttonPanel.add(batchDeleteBtn);
         buttonPanel.add(clearBtn);
 
         addBtn.addActionListener(e -> addEmployee());
         updateBtn.addActionListener(e -> updateEmployee());
         deleteBtn.addActionListener(e -> deleteEmployee());
+        batchDeleteBtn.addActionListener(e -> batchDeleteEmployees());
         clearBtn.addActionListener(e -> clearFields());
 
         mainPanel.add(inputPanel, BorderLayout.CENTER);
@@ -325,6 +328,32 @@ public class EmployeePanel extends JPanel {
         if (confirm == JOptionPane.YES_OPTION) {
             dao.delete(id);
             showMessage("Employee deleted successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+            loadEmployees();
+        }
+    }
+    
+    private void batchDeleteEmployees() {
+        int[] selectedRows = table.getSelectedRows();
+        if (selectedRows.length == 0) {
+            showMessage("Please select employees to delete", "No Selection", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        
+        int confirm = JOptionPane.showConfirmDialog(this,
+            "Are you sure you want to delete " + selectedRows.length + " selected employees?",
+            "Confirm Batch Delete",
+            JOptionPane.YES_NO_OPTION,
+            JOptionPane.QUESTION_MESSAGE);
+            
+        if (confirm == JOptionPane.YES_OPTION) {
+            int deletedCount = 0;
+            for (int i = 0; i < selectedRows.length; i++) {
+                String id = model.getValueAt(selectedRows[i], 0).toString();
+                dao.delete(id);
+                deletedCount++;
+            }
+            
+            showMessage("Deleted " + deletedCount + " employees successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
             loadEmployees();
         }
     }
