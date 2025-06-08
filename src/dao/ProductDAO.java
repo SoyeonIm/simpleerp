@@ -20,7 +20,7 @@ public class ProductDAO {
             }
             
             PreparedStatement stmt = conn.prepareStatement(sql);
-            stmt.setInt(1, p.getId());
+            stmt.setString(1, p.getId());
             stmt.setString(2, p.getName());
             stmt.setInt(3, p.getQuantity());
             stmt.setDouble(4, p.getPrice());
@@ -125,7 +125,7 @@ public class ProductDAO {
                 String name = rs.getString("name");
                 int qty = rs.getInt("quantity");
                 double price = rs.getDouble("price");
-                products.add(new Product(Integer.parseInt(id), name, qty, price));
+                products.add(new Product(id, name, qty, price));
             }
             rs.close();
             stmt.close();
@@ -133,47 +133,5 @@ public class ProductDAO {
             System.out.println("error getting products: " + ex.getMessage());
         }
         return products;
-    }
-    
-    public void deleteMultiple(String[] ids) {
-        if (ids == null || ids.length == 0) {
-            return;
-        }
-        
-        Connection conn = DatabaseManager.getInstance().getConnection();
-        String sql = "DELETE FROM products WHERE id = ?";
-        
-        try {
-            if (!conn.getAutoCommit()) {
-                conn.setAutoCommit(true);
-            }
-            
-            PreparedStatement stmt = conn.prepareStatement(sql);
-            int count = 0;
-            
-            for (String id : ids) {
-                if (id != null && !id.trim().isEmpty()) {
-                    stmt.setString(1, id.trim());
-                    stmt.addBatch();
-                    count++;
-                }
-            }
-            
-            if (count > 0) {
-                int[] results = stmt.executeBatch();
-                System.out.println("deleted " + count + " products");
-            }
-            
-            stmt.close();
-        } catch (SQLException ex) {
-            System.out.println("error in batch delete: " + ex.getMessage());
-            try {
-                if (!conn.getAutoCommit()) {
-                    conn.rollback();
-                }
-            } catch (SQLException rollbackEx) {
-                System.out.println("rollback failed: " + rollbackEx.getMessage());
-            }
-        }
     }
 }
