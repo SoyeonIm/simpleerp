@@ -1,5 +1,6 @@
 package db;
 
+import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -10,8 +11,22 @@ import utils.ErrorHandler;
 public class DatabaseManager {
     
     private static DatabaseManager instance;
-    private static final String DB_URL = "jdbc:derby:simpleerpdb;create=true";
+    // Use relative path to the project directory, ensure it can be found on different computers
+    private static final String DB_URL = getProjectDatabaseUrl();
     private Connection connection;
+
+    // Get the database URL from the project root directory
+    private static String getProjectDatabaseUrl() {
+        try {
+            // Get the current class file location, and find the project root directory
+            String projectRoot = System.getProperty("user.dir");
+            String dbPath = projectRoot + File.separator + "simpleerpdb";
+            return "jdbc:derby:" + dbPath + ";create=true";
+        } catch (Exception e) {
+            // If failed, use default relative path
+            return "jdbc:derby:simpleerpdb;create=true";
+        }
+    }
 
     //private constructor so no one can make new objects
     private DatabaseManager() {
@@ -21,14 +36,16 @@ public class DatabaseManager {
     private void initializeDatabase() {
         try {
             Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
+            System.out.println("Attempting to connect to database: " + DB_URL);
             connection = DriverManager.getConnection(DB_URL);
             
             // Ensure auto-commit is enabled for easier transaction handling
             connection.setAutoCommit(true);
             
-            System.out.println("database connected with auto-commit: " + connection.getAutoCommit());
+            System.out.println("database connected successfully with auto-commit: " + connection.getAutoCommit());
             setupTables();
         } catch (Exception e) {
+            System.err.println("Failed to connect to main database: " + e.getMessage());
             ErrorHandler.handleDatabaseError(e, "initial connection");
             tryBackupDatabase();
         }
@@ -46,6 +63,7 @@ public class DatabaseManager {
     public Connection getConnection() {
         try {
             if (connection == null || connection.isClosed()) {
+                System.out.println("Connection is null or closed, reinitializing...");
                 initializeDatabase();
             } else {
                 // Double-check auto-commit is enabled
@@ -55,20 +73,31 @@ public class DatabaseManager {
                 }
             }
         } catch (SQLException e) {
+            System.err.println("Connection check failed: " + e.getMessage());
             ErrorHandler.handleDatabaseError(e, "connection check");
             initializeDatabase();
         }
+        
+        //Make sure not to return a null connection
+        if (connection == null) {
+            throw new RuntimeException("Failed to establish database connection. Please check if the database files exist and are accessible.");
+        }
+        
         return connection;
     }
     
     private void tryBackupDatabase() {
         try {
-            String backupUrl = "jdbc:derby:simpleerpdb_backup;create=true";
+            String projectRoot = System.getProperty("user.dir");
+            String backupDbPath = projectRoot + File.separator + "simpleerpdb_backup";
+            String backupUrl = "jdbc:derby:" + backupDbPath + ";create=true";
+            System.out.println("Attempting backup database connection: " + backupUrl);
             connection = DriverManager.getConnection(backupUrl);
             connection.setAutoCommit(true);
-            System.out.println("connected to backup database");
+            System.out.println("connected to backup database successfully");
             setupTables();
         } catch (Exception ex) {
+            System.err.println("Backup database connection also failed: " + ex.getMessage());
             ErrorHandler.handleDatabaseError(ex, "backup connection");
         }
     }
