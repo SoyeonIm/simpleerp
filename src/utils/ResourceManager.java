@@ -38,6 +38,7 @@ public class ResourceManager {
     
     //get resized icon with high quality scaling
     public static ImageIcon getResizedIcon(String iconName, int width, int height) {
+        //This part is completed with ai assistance
         ImageIcon icon = getIcon(iconName);
         if (icon != null) {
             Image img = icon.getImage().getScaledInstance(width, height, Image.SCALE_SMOOTH);
@@ -65,7 +66,8 @@ public class ResourceManager {
     }
     
     private static ImageIcon createDefaultIcon(int width, int height) {
-        //create simple colored rectangle as default
+        
+        //create simple colored rectangle as default，This part is completed with ai assistance
         Image img = new java.awt.image.BufferedImage(width, height, java.awt.image.BufferedImage.TYPE_INT_RGB);
         Graphics2D g2 = (Graphics2D) img.getGraphics();
         g2.setColor(new Color(100, 150, 200));
@@ -78,7 +80,7 @@ public class ResourceManager {
     
     //color scheme based on your selected palette
     public static class Colors {
-        // Main palette from your color card
+        // Main palette from color card
         public static final Color DEEP_BLUE = new Color(41, 60, 115);      // #293C73
         public static final Color NAVY_BLUE = new Color(37, 50, 89);       // #253259  
         public static final Color WARM_BROWN = new Color(188, 94, 53);     // #BC5E35

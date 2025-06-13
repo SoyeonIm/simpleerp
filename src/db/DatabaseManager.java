@@ -24,6 +24,8 @@ public class DatabaseManager {
         try {
             Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
             
+            // [POSSIBLE AI-ASSISTED] Sophisticated database corruption detection and cleanup
+            // Advanced error recovery patterns beyond typical sophomore level
             //clean up any corrupted database files first
             cleanupCorruptedDatabases();
             
@@ -52,6 +54,8 @@ public class DatabaseManager {
     }
     
     private void cleanupDatabase(String dbName) {
+        // [POSSIBLE AI-ASSISTED] Advanced file system operations and error handling
+        // Professional-level database recovery logic
         try {
             File dbDir = new File(dbName);
             if (dbDir.exists() && dbDir.isDirectory()) {

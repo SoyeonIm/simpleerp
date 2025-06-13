@@ -22,6 +22,8 @@ public class CustomMessageDialog extends JDialog {
         setResizable(false);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         
+        // [POSSIBLE AI-ASSISTED] Custom dialog with gradient background
+        // Advanced UI design patterns beyond typical sophomore level
         //main panel with gradient background
         JPanel mainPanel = new JPanel() {
             @Override
@@ -122,6 +124,8 @@ public class CustomMessageDialog extends JDialog {
     }
     
     private ImageIcon createColoredIcon(Color color, int type) {
+        // [POSSIBLE AI-ASSISTED] Complex icon generation with Graphics2D
+        // Professional-level custom icon creation using advanced drawing techniques
         int size = 32;
         Image img = new java.awt.image.BufferedImage(size, size, java.awt.image.BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2 = (Graphics2D) img.getGraphics();

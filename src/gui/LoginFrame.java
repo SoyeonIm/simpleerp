@@ -26,6 +26,7 @@ public class LoginFrame extends JFrame {
         setLocationRelativeTo(null);
         setResizable(false);
         
+        
         //main panel with gradient background
         JPanel mainPanel = new JPanel() {
             @Override
@@ -155,7 +156,8 @@ public class LoginFrame extends JFrame {
         return card;
     }
     
-    private JButton createStyledButton(String text, Color bgColor) {
+    private JButton createStyledButton(String text, Color bgColor) { 
+        //This part is completed with ai assistance
         JButton button = new JButton(text);
         button.setPreferredSize(new Dimension(270, 45));
         button.setMaximumSize(new Dimension(270, 45));
