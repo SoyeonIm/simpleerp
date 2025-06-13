@@ -120,6 +120,19 @@ public class EmployeePanel extends JPanel {
         table.getTableHeader().setFont(new Font("Arial", Font.BOLD, 14));
         table.getTableHeader().setPreferredSize(new Dimension(0, 40));
 
+        // Set column widths for better alignment across different resolutions
+        table.getColumnModel().getColumn(0).setPreferredWidth(120);  // ID column
+        table.getColumnModel().getColumn(1).setPreferredWidth(350);  // Employee Name column (increased)
+        table.getColumnModel().getColumn(2).setPreferredWidth(250);  // Department column (increased)
+        
+        // Set minimum widths to prevent columns from becoming too small
+        table.getColumnModel().getColumn(0).setMinWidth(100);
+        table.getColumnModel().getColumn(1).setMinWidth(280);
+        table.getColumnModel().getColumn(2).setMinWidth(200);
+        
+        // Enable auto-resize for better responsiveness
+        table.setAutoResizeMode(JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
+
         DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
         centerRenderer.setHorizontalAlignment(JLabel.CENTER);
         table.getColumnModel().getColumn(0).setCellRenderer(centerRenderer);
