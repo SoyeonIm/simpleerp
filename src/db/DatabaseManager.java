@@ -3,6 +3,8 @@ package db;
 import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
@@ -10,9 +12,10 @@ import java.sql.Statement;
 public class DatabaseManager {
     
     private static DatabaseManager instance;
-    // Use simple relative path - this avoids complex path issues
-    private static final String DB_NAME = "simpleerpdb";
-    private static final String BACKUP_DB_NAME = "simpleerpdb_backup";
+    // Use project-relative path to ensure consistency across different computers
+    private static final String PROJECT_DIR = System.getProperty("user.dir");
+    private static final String DB_NAME = PROJECT_DIR + File.separator + "simpleerpdb";
+    private static final String BACKUP_DB_NAME = PROJECT_DIR + File.separator + "simpleerpdb_backup";
     private Connection connection;
 
     //private constructor so no one can make new objects
@@ -188,9 +191,79 @@ public class DatabaseManager {
             stmt.close();
             System.out.println("Database tables setup completed!");
             
+            // Add sample data if tables are empty (for demonstration purposes)
+            insertSampleDataIfEmpty();
+            
         } catch (SQLException e) {
             System.err.println("Error setting up tables: " + e.getMessage());
             e.printStackTrace();
+        }
+    }
+    
+    // Insert sample data if tables are empty
+    private void insertSampleDataIfEmpty() {
+        try {
+            // Check if employees table is empty and add sample data
+            Statement checkStmt = connection.createStatement();
+            ResultSet rs = checkStmt.executeQuery("SELECT COUNT(*) FROM employees");
+            if (rs.next() && rs.getInt(1) == 0) {
+                // Insert sample employees
+                PreparedStatement empStmt = connection.prepareStatement(
+                    "INSERT INTO employees (id, name, department) VALUES (?, ?, ?)");
+                
+                empStmt.setString(1, "E001");
+                empStmt.setString(2, "John Smith");
+                empStmt.setString(3, "Engineering");
+                empStmt.executeUpdate();
+                
+                empStmt.setString(1, "E002");
+                empStmt.setString(2, "Jane Doe");
+                empStmt.setString(3, "Marketing");
+                empStmt.executeUpdate();
+                
+                empStmt.setString(1, "E003");
+                empStmt.setString(2, "Bob Wilson");
+                empStmt.setString(3, "Finance");
+                empStmt.executeUpdate();
+                
+                empStmt.close();
+                System.out.println("Sample employees inserted");
+            }
+            
+            // Check if products table is empty and add sample data
+            rs = checkStmt.executeQuery("SELECT COUNT(*) FROM products");
+            if (rs.next() && rs.getInt(1) == 0) {
+                // Insert sample products
+                PreparedStatement prodStmt = connection.prepareStatement(
+                    "INSERT INTO products (id, name, quantity, price) VALUES (?, ?, ?, ?)");
+                
+                prodStmt.setString(1, "P001");
+                prodStmt.setString(2, "Laptop Computer");
+                prodStmt.setInt(3, 25);
+                prodStmt.setDouble(4, 1299.99);
+                prodStmt.executeUpdate();
+                
+                prodStmt.setString(1, "P002");
+                prodStmt.setString(2, "Office Chair");
+                prodStmt.setInt(3, 50);
+                prodStmt.setDouble(4, 199.99);
+                prodStmt.executeUpdate();
+                
+                prodStmt.setString(1, "P003");
+                prodStmt.setString(2, "Wireless Mouse");
+                prodStmt.setInt(3, 100);
+                prodStmt.setDouble(4, 29.99);
+                prodStmt.executeUpdate();
+                
+                prodStmt.close();
+                System.out.println("Sample products inserted");
+            }
+            
+            rs.close();
+            checkStmt.close();
+            
+        } catch (SQLException e) {
+            System.out.println("Note: Could not insert sample data: " + e.getMessage());
         }
     }
     

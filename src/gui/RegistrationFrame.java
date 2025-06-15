@@ -1,11 +1,11 @@
 package gui;
 
-import utils.ResourceManager;
 import dao.UserDAO;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import utils.ResourceManager;
 
 public class RegistrationFrame extends JFrame {
     
@@ -233,10 +233,10 @@ public class RegistrationFrame extends JFrame {
         
         //attempt registration
         if (userDAO.register(username, password)) {
-            CustomMessageDialog.showSuccess(this, "Account created successfully! You can now login.", "Registration Successful");
+            JOptionPane.showMessageDialog(this, "Account created successfully! You can now login.", "Registration Successful", JOptionPane.INFORMATION_MESSAGE);
             backToLoginAction(null);
         } else {
-            CustomMessageDialog.showError(this, "Registration failed. Username may already exist.", "Registration Failed");
+            JOptionPane.showMessageDialog(this, "Registration failed. Username may already exist.", "Registration Failed", JOptionPane.ERROR_MESSAGE);
             usernameField.requestFocus();
         }
     }
@@ -247,19 +247,6 @@ public class RegistrationFrame extends JFrame {
     }
     
     private void showMessage(String message, String title, int type) {
-        switch (type) {
-            case JOptionPane.ERROR_MESSAGE:
-                CustomMessageDialog.showError(this, message, title);
-                break;
-            case JOptionPane.WARNING_MESSAGE:
-                CustomMessageDialog.showWarning(this, message, title);
-                break;
-            case JOptionPane.INFORMATION_MESSAGE:
-                CustomMessageDialog.showInfo(this, message, title);
-                break;
-            default:
-                CustomMessageDialog.showInfo(this, message, title);
-                break;
-        }
+        JOptionPane.showMessageDialog(this, message, title, type);
     }
 } 
