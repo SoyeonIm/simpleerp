@@ -14,7 +14,6 @@ A modern **Enterprise Resource Planning (ERP)** system built with Java Swing and
 | Username | Password | Role   |
 |----------|----------|--------|
 | admin    | admin123 | Admin  |
-| test     | test123  | User   |
 
 ## ⭐ Key Features
 
